@@ -107,10 +107,17 @@
     [self setMonthFromDate:[NSDate date].firstDayOfTheMonth.defaultTime];
     if (self.disabledDates == nil) self.disabledDates = [[NSArray alloc] init];
     int lastSunday = [NSDate daysFromLastSunday];
+   
     dates = [[NSMutableArray alloc] init];
-    for (int i = -lastSunday; i < 364-lastSunday; i++) {
+    
+    for (int i = -lastSunday - 60; i < 364-lastSunday; i++) { // EDITED
         [dates addObject:[NSDate daysFromNow:i].defaultTime];
-    } self.startDate = self.startDate.defaultTime;
+    }
+    
+    
+
+    
+    self.startDate = self.startDate.defaultTime;
     self.endDate = self.endDate.defaultTime;
 }
 
@@ -292,7 +299,7 @@
 #pragma mark - Month Control
 - (void)setMonthFromDate:(NSDate *)date {
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateFormat:@"MMMM, YYYY"];
+    [formatter setDateFormat:@"MMMM YYYY"];
     if (self.forceLocale != nil) [formatter setLocale:self.forceLocale];
     [self.monthLabel setText:[formatter stringFromDate:date].capitalizedString];
     selectedMonth = date;
@@ -385,8 +392,8 @@
 }
 
 - (BOOL)shouldDisable:(SSCalendarCollectionViewCell *)calendarCell {
-    if ([[NSDate date].defaultTime compare:calendarCell.cellDate] == NSOrderedDescending) return YES;
-    if ([self isDateDisabled:calendarCell.cellDate]) return YES;
+    if ([[NSDate date].defaultTime compare:calendarCell.cellDate] == NSOrderedDescending) return NO;
+    if ([self isDateDisabled:calendarCell.cellDate]) return NO;
     return NO;
 }
 
