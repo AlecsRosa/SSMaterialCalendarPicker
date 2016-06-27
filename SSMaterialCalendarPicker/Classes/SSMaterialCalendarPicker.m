@@ -84,9 +84,9 @@
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        UINib *cellNib = [UINib nibWithNibName:kCalendarCellIdentifier bundle:nil];
-        self = [[[NSBundle mainBundle] loadNibNamed:kCalendarPickerIdentifier
-                                              owner:self options:nil] objectAtIndex:0];
+        NSBundle *bundle = [NSBundle bundleForClass:[SSMaterialCalendarPicker class]];
+        UINib *cellNib = [UINib nibWithNibName:kCalendarCellIdentifier bundle:bundle];
+        self = [[bundle loadNibNamed:kCalendarPickerIdentifier owner:self options:nil] objectAtIndex:0];
         [self setFrame:frame];
         [self initializeDates];
         [self addCalendarMask];
@@ -159,7 +159,7 @@
 }
 
 - (void)setOkButtonText:(NSString *)okButtonText {
-    _okButtonText = okButtonText;
+    //_okButtonText = okButtonText;
     [self.okButton setTitle:okButtonText forState:UIControlStateNormal];
 }
 
