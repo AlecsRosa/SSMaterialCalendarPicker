@@ -74,6 +74,20 @@
     return --weekday;
 }
 
++ (int)daysFromLastMondayOfTwoMonthsAgo {
+    NSDate *twoMonthsAgo = [[[NSDate date] addMonths:-2] firstDayOfTheMonth];
+    
+    int weekday = (int)[[NSCalendar currentCalendar] component:NSCalendarUnitWeekday fromDate:twoMonthsAgo];
+    
+    return [NSDate daysBetween:[NSDate date] and:twoMonthsAgo] + weekday + 2;
+}
+
++ (int)daysToNextYear {
+    NSDate *nextYear = [[[NSDate date] addMonths:13] firstDayOfTheMonth];
+    
+    return [NSDate daysBetween:[NSDate date] and:nextYear];
+}
+
 - (NSDate *)addMonths:(NSInteger)months {
     NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
     [dateComponents setMonth:months];

@@ -84,9 +84,9 @@
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        UINib *cellNib = [UINib nibWithNibName:kCalendarCellIdentifier bundle:nil];
-        self = [[[NSBundle mainBundle] loadNibNamed:kCalendarPickerIdentifier
-                                              owner:self options:nil] objectAtIndex:0];
+        NSBundle *bundle = [NSBundle bundleForClass:[SSMaterialCalendarPicker class]];
+        UINib *cellNib = [UINib nibWithNibName:kCalendarCellIdentifier bundle:bundle];
+        self = [[bundle loadNibNamed:kCalendarPickerIdentifier owner:self options:nil] objectAtIndex:0];
         [self setFrame:frame];
         [self initializeDates];
         [self addCalendarMask];
@@ -106,11 +106,14 @@
 - (void)initializeDates {
     [self setMonthFromDate:[NSDate date].firstDayOfTheMonth.defaultTime];
     if (self.disabledDates == nil) self.disabledDates = [[NSArray alloc] init];
-    int lastSunday = [NSDate daysFromLastSunday];
+   
     dates = [[NSMutableArray alloc] init];
-    for (int i = -lastSunday; i < 364-lastSunday; i++) {
+    
+    for (int i = [NSDate daysFromLastMondayOfTwoMonthsAgo]; i < [NSDate daysToNextYear]; i++) { // EDITED
         [dates addObject:[NSDate daysFromNow:i].defaultTime];
-    } self.startDate = self.startDate.defaultTime;
+    }
+    
+    self.startDate = self.startDate.defaultTime;
     self.endDate = self.endDate.defaultTime;
 }
 
@@ -159,7 +162,7 @@
 }
 
 - (void)setOkButtonText:(NSString *)okButtonText {
-    _okButtonText = okButtonText;
+    //_okButtonText = okButtonText;
     [self.okButton setTitle:okButtonText forState:UIControlStateNormal];
 }
 
@@ -217,6 +220,11 @@
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(nonnull UIScrollView *)scrollView {
+    [self checkVisibleMonth];
+    runningScrollAnimation = NO;
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     [self checkVisibleMonth];
     runningScrollAnimation = NO;
 }
@@ -292,7 +300,7 @@
 #pragma mark - Month Control
 - (void)setMonthFromDate:(NSDate *)date {
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateFormat:@"MMMM, YYYY"];
+    [formatter setDateFormat:@"MMMM YYYY"];
     if (self.forceLocale != nil) [formatter setLocale:self.forceLocale];
     [self.monthLabel setText:[formatter stringFromDate:date].capitalizedString];
     selectedMonth = date;
@@ -303,7 +311,7 @@
     for (int i = 0; i < 7; i++) {
         CGFloat cellSize = CGRectGetWidth(self.calendarCollectionView.frame)/7.001f;
         NSIndexPath *indexPath = [self.calendarCollectionView indexPathForItemAtPoint:[[self.calendarCollectionView superview]
-                                                           convertPoint:CGPointMake(cellSize/2 + i*cellSize, cellSize/2)
+                                                           convertPoint:CGPointMake(cellSize/2 + i*cellSize, cellSize)
                                                            toView:self.calendarCollectionView]];
         if (indexPath != nil)
             [indexPaths addObject:indexPath];
@@ -385,8 +393,8 @@
 }
 
 - (BOOL)shouldDisable:(SSCalendarCollectionViewCell *)calendarCell {
-    if ([[NSDate date].defaultTime compare:calendarCell.cellDate] == NSOrderedDescending) return YES;
-    if ([self isDateDisabled:calendarCell.cellDate]) return YES;
+    if ([[NSDate date].defaultTime compare:calendarCell.cellDate] == NSOrderedDescending) return NO;
+    if ([self isDateDisabled:calendarCell.cellDate]) return NO;
     return NO;
 }
 
@@ -423,7 +431,11 @@
         for (SSCalendarCollectionViewCell *calendarCell in visibleCells) {
             [calendarCell fastSelectCalendarCell:[self shouldSelect:calendarCell]];
             [calendarCell fastDisableCalendarCell:[self shouldDisable:calendarCell]];
-        } init = YES;
+        }
+        
+        [self scrollToMonthWithDate:[NSDate date]];
+        
+        init = YES;
     } else {
         for (SSCalendarCollectionViewCell *calendarCell in visibleCells) {
             [calendarCell selectCalendarCell:[self shouldSelect:calendarCell]];
